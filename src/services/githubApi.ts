@@ -6,7 +6,7 @@ export const fetchGitHubInfo = async (): Promise<{
   repoData: GitHubRepoInfo;
   branchData: GitHubRepoInfo;
 }> => {
-  const username = "maciekt07";
+  const username = "thapasijan171";
   const repo = "TodoApp";
   const branch = "gh-pages";
   try {

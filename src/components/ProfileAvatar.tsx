@@ -220,7 +220,7 @@ export const ProfileAvatar = () => {
         </StyledMenuItem>
         <StyledMenuItem
           onClick={() => {
-            window.open("https://github.com/maciekt07/TodoApp/issues/new");
+            window.open("https://github.com/thapasijan171/TodoApp/issues/new");
           }}
         >
           <BugReportRounded /> &nbsp; Report Issue{" "}
@@ -293,9 +293,9 @@ export const ProfileAvatar = () => {
             <span style={{ marginLeft: "6px", marginRight: "4px" }}>by</span>{" "}
             <a
               style={{ textDecoration: "none", color: "inherit" }}
-              href="https://github.com/maciekt07"
+              href="https://github.com/thapasijan171"
             >
-              maciekt07
+              thapasijan171
             </a>
             <br />
           </CreditsContainer>
