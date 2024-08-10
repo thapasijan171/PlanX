@@ -91,7 +91,7 @@ const Home = () => {
     if (typeof text === "string") {
       return replaceEmojiCodes(text);
     } else {
-      // It's already a ReactNode, no need to process
+      // It's already a ReactNode, no need to process for this
       return text;
     }
   };
