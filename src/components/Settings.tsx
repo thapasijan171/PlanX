@@ -199,6 +199,7 @@ export const SettingsDialog = ({ open, onClose }: SettingsProps) => {
                   // Disable non-native styles when offline or if they are not the default style or last selected style
                   // This prevents users from selecting styles that require fetching external resources (emojis) when offline,
                   // as those emojis may not load without an internet connection.
+                  // 
                   disabled={
                     !isOnline &&
                     style.style !== EmojiStyle.NATIVE &&
