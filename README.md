@@ -14,9 +14,7 @@
 
 - **Local and session storage**: Save tasks locally and retain form data using session storage.
 - **Custom Emojis**: The app features different emoji styles to choose from, including Apple, Facebook, Twitter, Google and Native.
-<!-- <br /><img src="public/screenshots/EmojiSettings.png" width="250px" /> -->
 - **Share tasks by link**: Easily share your tasks with others using a link. [Example Link](https://todo-np.vercel.app/)<br/><img src="public/demo-2.png" width="300px" />
-<!-- <br/><img src="public/screenshots/RecievedTask.png" width="250px" /> -->
 - **It has a clean and responsive design**, ensuring a smooth user experience across different devices.
 - **Native Intl Integration**: Adapts to your language, timezone, and date preferences using the native `Intl` API
 - **Customizable Categories**: Users can create and personalize task categories to suit their preferences.
