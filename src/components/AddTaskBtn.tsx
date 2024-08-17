@@ -18,6 +18,7 @@ export const AddTaskBtn = ({ animate }: AddTaskBtnProps): JSX.Element | null => 
   const n = useNavigate();
   const isMobile = useResponsiveDisplay();
 
+  // If it's a mobile device, don't render the button.
   if (isMobile) {
     return null;
   }
