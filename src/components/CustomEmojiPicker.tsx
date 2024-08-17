@@ -52,7 +52,6 @@ export const CustomEmojiPicker = ({ emoji, setEmoji, color, width }: EmojiPicker
     setCurrentEmoji(e.unified);
     // setEmojiData(e);
     console.log(e);
-    // console.log(e.getImageUrl(user.emojisStyle));
   };
 
   const handleRemoveEmoji = () => {
@@ -63,8 +62,6 @@ export const CustomEmojiPicker = ({ emoji, setEmoji, color, width }: EmojiPicker
   // Function to render the content of the Avatar based on whether an emoji is selected or not
   const renderAvatarContent = () => {
     if (currentEmoji) {
-      // Determine the size of the emoji based on the user's emoji style preference
-      // const emojiSize = user.emojisStyle === EmojiStyle.NATIVE ? 48 : 64;
 
       const emojiSize =
         emojisStyle === EmojiStyle.NATIVE && iOS ? 64 : emojisStyle === EmojiStyle.NATIVE ? 48 : 64;
