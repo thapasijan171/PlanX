@@ -1,10 +1,10 @@
 /**
- * Maximum length allowed for task names.
+ * Maximum length allowed for task names 30 .
  */
 export const TASK_NAME_MAX_LENGTH = 30;
 
 /**
- * Maximum length allowed for task descriptions.
+ * Maximum length allowed for task descriptions 350.
  */
 export const DESCRIPTION_MAX_LENGTH = 350;
 
