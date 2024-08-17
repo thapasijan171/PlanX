@@ -44,7 +44,7 @@ const Home = () => {
 
     const interval = setInterval(() => {
       setRandomGreeting(getRandomGreeting());
-      setGreetingKey((prevKey) => prevKey + 1); // Update the key on each interval
+      setGreetingKey((prevKey) => prevKey + 1); 
     }, 6000);
 
     return () => clearInterval(interval);
