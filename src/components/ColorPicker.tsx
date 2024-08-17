@@ -28,7 +28,7 @@ export const ColorPicker: React.FC<ColorPickerProps> = ({
   const [accordionExpanded, setAccordionExpanded] = useState<boolean>(false);
   const isHexColor = (value: string): boolean => /^#[0-9A-Fa-f]{6}$/.test(value);
 
-  // Predefined color options
+  // Predefined color options list
   const colors: string[] = [
     ColorPalette.purple,
     "#FF69B4",
