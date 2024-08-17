@@ -27,6 +27,7 @@ export function useStorageState<T>(
   useEffect(() => {
     storage.setItem(key, JSON.stringify(value));
   }, [key, value, storage]);
-  // Return the state value and update function
+
+  // Return the state value and update function value
   return [value, setValue];
 }
