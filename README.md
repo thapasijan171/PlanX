@@ -7,7 +7,7 @@
 
 <p align="center">
 
-<img src="public/demo-1.png" width="400px" />
+<img src="public/demo-1.png" width="401px" />
 </p>
 
 ## ⚡ Features
