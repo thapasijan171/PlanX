@@ -23,5 +23,6 @@ const AppRouter = (): ReactElement => {
     </Routes>
   );
 };
+//  Default
 
 export default AppRouter;

@@ -49,7 +49,7 @@ export const BottomNav = (): JSX.Element | null => {
           setValue(0);
           break;
         default:
-          setValue(undefined); // Fallback for the undefined route
+          setValue(undefined); // Fallback for the undefined route.
       }
     }
   }, [location.pathname]);

@@ -31,8 +31,6 @@ export interface Task {
   lastSave?: Date;
   sharedBy?: string;
 }
-
-// export type Emoji = Omit<
 //   EmojiClickData,
 //   "activeSkinTone" | "names" | "unifiedWithoutSkinTone" | "getImageUrl"
 // > & {
@@ -68,5 +66,5 @@ export interface AppSettings {
  */
 export interface UserProps {
   user: User; // User data
-  setUser: React.Dispatch<React.SetStateAction<User>>; // Function to update user data
+  setUser: React.Dispatch<React.SetStateAction<User>>; // Function update from user data
 }

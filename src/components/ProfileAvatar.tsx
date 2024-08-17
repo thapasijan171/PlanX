@@ -115,7 +115,6 @@ export const ProfileAvatar = () => {
               background: "#747474",
               transition: ".2s all",
               fontSize: "26px",
-              // WebkitTransform: "translate3d(0,0,0)",
             }}
           >
             {user.name ? user.name[0].toUpperCase() : undefined}
@@ -131,9 +130,6 @@ export const ProfileAvatar = () => {
         open={open}
         onOpen={() => console.log("")}
         onClose={handleClose}
-        // MenuListProps={{
-        //   "aria-labelledby": "basic-button",
-        // }}
       >
         <LogoContainer
           translate="no"
@@ -274,7 +270,6 @@ export const ProfileAvatar = () => {
               alignItems: "center",
               gap: "8px",
               background: "#d7d7d7",
-              // marginBottom: "12px",
             }}
           >
             <Avatar

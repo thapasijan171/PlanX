@@ -15,7 +15,7 @@ interface ErrorBoundaryState {
   hasError: boolean;
   error?: Error;
 }
-
+// github api
 /**
  * ErrorBoundary component that catches and displays errors within its children.
  */
