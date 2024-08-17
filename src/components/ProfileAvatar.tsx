@@ -270,7 +270,6 @@ export const ProfileAvatar = () => {
               alignItems: "center",
               gap: "8px",
               background: "#d7d7d7",
-              // marginBottom: "12px",
             }}
           >
             <Avatar
