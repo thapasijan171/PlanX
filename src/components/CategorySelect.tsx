@@ -26,7 +26,7 @@ interface CategorySelectProps {
   setSelectedCategories: React.Dispatch<React.SetStateAction<Category[]>>;
 }
 /**
- * Component for selecting categories with .
+ * Component for selecting categories with emojis.
  */
 
 export const CategorySelect: React.FC<CategorySelectProps> = ({
