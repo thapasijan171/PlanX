@@ -13,7 +13,6 @@ import { useResponsiveDisplay } from "../hooks/useResponsiveDisplay";
 import { UserContext } from "../contexts/UserContext";
 
 /**
- * Component for rendering the bottom navigation bar.
  */
 export const BottomNav = (): JSX.Element | null => {
   const { user } = useContext(UserContext);
