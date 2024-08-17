@@ -31,8 +31,6 @@ export interface Task {
   lastSave?: Date;
   sharedBy?: string;
 }
-
-// export type Emoji = Omit<
 //   EmojiClickData,
 //   "activeSkinTone" | "names" | "unifiedWithoutSkinTone" | "getImageUrl"
 // > & {
