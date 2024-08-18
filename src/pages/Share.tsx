@@ -228,7 +228,7 @@ const SharePage = () => {
           <>
             <DialogTitle>Something went wrong</DialogTitle>
             <DialogContent>
-              {/* TODO: */}
+              {/* TODO app improt */}
               <p>
                 Oops! Something went wrong while processing the shared task.{" "}
                 {errorDetails && (
