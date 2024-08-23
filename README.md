@@ -1,13 +1,13 @@
 <!-- prettier-ignore -->
 <p align="center">
-<img src="public/logo256.png" width="128px" />
+<img src="public/logo512.png" width="128px" />
 <h1>📝React.js Todo App</h1>
 </p>
 
 
 <p align="center">
 
-<img src="public/demo-1.png" width="400px" />
+<!-- <img src="public/demo-1.png" width="400px" /> -->
 </p>
 
 ## ⚡ Features
