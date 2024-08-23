@@ -24,7 +24,7 @@
 - **Import/Export Tasks**: Users can now import and export tasks to/from JSON files. This feature allows users to back up their tasks or transfer them to other devices easily.
 - **Works offline**: This app is a Progressive Web App (PWA), which means it can be installed on your device and used even when you're offline. You can access and manage your tasks without an internet connection, ensuring uninterrupted productivity.
 
-## 📷 Screenshots
+<!-- ## 📷 Screenshots 
 
 <img src="public/m-1.png" width="350px" />
 
@@ -52,7 +52,7 @@
 
 <img src="public/demo-3.png" width="650px" />
 
-<br><hr><hr><br>
+<br><hr><hr><br> -->
 
 
 ## 🌐 Tech Stack
