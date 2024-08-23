@@ -10,7 +10,7 @@ import { UserContext } from "../contexts/UserContext";
 import { PushPinRounded } from "@mui/icons-material";
 import { USER_NAME_MAX_LENGTH } from "../constants";
 
-//FIXME: make everything type-safe
+//FIXME: make everything type safe
 const SharePage = () => {
   const { user, setUser } = useContext(UserContext);
   const { emojisStyle, settings } = user;

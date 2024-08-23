@@ -13,5 +13,6 @@ export const MainLayout = ({ children }: MainLayoutProps) => {
       <div style={{ marginTop: "128px" }} />
       <BottomNav />
     </>
+    // export app
   );
 };
