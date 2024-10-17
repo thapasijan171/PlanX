@@ -1,18 +1,19 @@
 import { ReactNode } from "react";
-import { BottomNav, ProfileAvatar } from "../components";
+import { BottomNav, ProfileSidebar } from "../components";
 
 interface MainLayoutProps {
   children: ReactNode;
 }
 
-export const MainLayout = ({ children }: MainLayoutProps) => {
+const MainLayout = ({ children }: MainLayoutProps) => {
   return (
     <>
-      <ProfileAvatar />
+      <ProfileSidebar />
       {children}
       <div style={{ marginTop: "128px" }} />
       <BottomNav />
     </>
-    // export app
   );
 };
+
+export default MainLayout;

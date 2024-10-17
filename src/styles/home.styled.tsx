@@ -1,7 +1,7 @@
 import styled from "@emotion/styled";
-import { fadeIn, fadeInLeft } from "./globalStyles";
-import { Box, CircularProgress } from "@mui/material";
-import { ColorPalette } from ".";
+import { fadeIn, fadeInLeft, progressPulse, pulseAnimation, scale } from "./keyframes.styled";
+import { Box, Button, CircularProgress, css } from "@mui/material";
+import { getFontColor, isDark } from "../utils";
 
 export const GreetingHeader = styled.div`
   display: flex;
@@ -32,11 +32,11 @@ export const TasksCountContainer = styled.div`
   justify-content: center;
   align-items: center;
 `;
-
+//TODO: design this better for light themes
 export const TasksCount = styled.div<{ glow: boolean }>`
-  /* border: 3px solid ${ColorPalette.purple}; */
-  /* box-shadow: ${(props) => (props.glow ? "0 0 48px -8px #b624ff9d" : "none")}; */
-  background: #090b2258;
+  color: ${({ theme }) => getFontColor(theme.secondary)};
+  /* background: #090b2258; */
+  background: ${({ theme }) => (isDark(theme.secondary) ? "#090b2258" : "#ffffff3e")};
   transition: 0.3s all;
   display: flex;
   align-items: center;
@@ -46,14 +46,14 @@ export const TasksCount = styled.div<{ glow: boolean }>`
   margin: 24px 0 12px 0;
   border-radius: 24px;
   width: 650px;
-  border: 1px solid #44479cb7;
+  border: 1px solid ${({ theme }) => (isDark(theme.secondary) ? "#44479cb7" : theme.primary)};
   @media (min-width: 1024px) {
     padding: 24px;
   }
 `;
 
 export const TaskCountTextContainer = styled.div`
-  line-height: 1.75;
+  line-height: 1.7;
   margin-left: 6px;
 `;
 
@@ -70,24 +70,7 @@ export const TaskCompletionText = styled.p`
   font-size: 16px;
 `;
 
-// export const DeleteDoneBtn = styled.button`
-//   position: fixed;
-//   display: flex;
-//   cursor: pointer;
-//   border: none;
-//   font-weight: bold;
-//   bottom: 24px;
-//   width: auto;
-
-//   font-size: 17px;
-//   padding: 18px;
-//   background-color: #ff453f;
-//   color: white;
-//   border-radius: 18px;
-//   box-shadow: 0 0 6px 0 #ff453fd6;
-// `;
-
-export const ProgressPercentageContainer = styled(Box)`
+export const ProgressPercentageContainer = styled(Box)<{ glow: boolean }>`
   top: 0;
   left: 0;
   bottom: 0;
@@ -96,27 +79,65 @@ export const ProgressPercentageContainer = styled(Box)`
   display: flex;
   align-items: center;
   justify-content: center;
-  background-color: #090b2287;
+  /* background: #090b2287; */
+  background: ${({ theme }) => (isDark(theme.secondary) ? "#090b2287" : "#ffffff5c")};
   border-radius: 100px;
   margin: -5px;
-  border: 1px solid #44479cb7;
-  box-shadow: 0 0 18px -2px #090b2287;
+  border: 1px solid ${({ theme }) => (isDark(theme.secondary) ? "#44479cb7" : theme.primary)};
+  box-shadow: ${({ theme }) => `0 0 18px -2px ${isDark(theme.secondary) ? "#090b22" : "#bababa"}`};
+  & .MuiTypography-root {
+    color: ${({ theme }) => getFontColor(theme.secondary)};
+  }
+  animation: ${({ theme, glow }) =>
+    glow
+      ? css`
+          ${progressPulse(theme.primary)} 4s infinite ease-in
+        `
+      : "none"};
 `;
-// const pulse = keyframes`
-//   0% {
-//     filter: drop-shadow(0 0 6px ${ColorPalette.purple});
-//   }
-//   50% {
-//     filter: drop-shadow(0 0 2px ${ColorPalette.purple});
-//   }
-//   100% {
-//     filter: drop-shadow(0 0 6px ${ColorPalette.purple});
-//   }
-// `;
-export const StyledProgress = styled(CircularProgress)`
+
+export const StyledProgress = styled(CircularProgress)<{ glow: boolean }>`
   z-index: 1;
   margin: 2px;
-  /* filter: drop-shadow(0 0 8px ${ColorPalette.purple + "35"}); */
+  filter: ${({ glow, theme }) => (glow ? `drop-shadow(0 0 6px ${theme.primary}c8)` : "none")};
+  transition: 0.3s filter;
+`;
+
+export const AddButton = styled(Button)<{ animate?: boolean; glow: boolean }>`
+  cursor: pointer;
+  border: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: fixed;
+  bottom: 24px;
+  width: 72px;
+  height: 72px;
+  border-radius: 100%;
+  background-color: ${({ theme }) => theme.primary};
+  color: ${({ theme }) => getFontColor(theme.primary)};
+  right: 16vw;
+  box-shadow: ${({ glow, theme }) => (glow ? `0px 0px 32px -8px ${theme}` : "none")};
+  transition:
+    background-color 0.3s,
+    backdrop-filter 0.3s,
+    box-shadow 0.3s;
+
+  &:hover {
+    box-shadow: none;
+    background-color: ${({ theme }) => theme.primary};
+    backdrop-filter: blur(6px);
+  }
+  animation: ${scale} 0.3s;
+  ${({ animate, theme }) =>
+    animate &&
+    css`
+      animation: ${pulseAnimation(theme.primary, 14)} 1.2s infinite;
+    `}
+
+  @media (max-width: 1024px) {
+    right: 24px;
+  }
 `;
 
 export const Offline = styled.div`
@@ -124,6 +145,8 @@ export const Offline = styled.div`
   justify-content: center;
   align-items: center;
   gap: 6px;
-  margin-top: 24px;
+  text-shadow: 0 0 8px #ffffff56;
+  margin-top: 20px;
+  opacity: 0.8;
   animation: ${fadeIn} 0.5s ease;
 `;

@@ -1,19 +1,46 @@
-import { Avatar, Dialog, DialogActions, DialogContent, DialogTitle } from "@mui/material";
-import { CategoryChip, DialogBtn } from "../styles";
+import { Alert, AlertTitle, Dialog, DialogActions, DialogContent, Tooltip } from "@mui/material";
+import {
+  DescriptionLink,
+  EmojiContainer,
+  Pinned,
+  RingAlarm,
+  TaskContainer,
+  TaskDate,
+  TaskDescription,
+  TaskHeader,
+  TaskInfo,
+  TaskName,
+  TimeLeft,
+} from "../components/tasks/tasks.styled";
+import { DialogBtn } from "../styles";
 import { useLocation, useNavigate } from "react-router-dom";
 import { useContext, useEffect, useState } from "react";
-import { Task } from "../types/user";
-import toast from "react-hot-toast";
-import { calculateDateDifference, getFontColorFromHex } from "../utils";
+import type { Task } from "../types/user";
+import {
+  calculateDateDifference,
+  formatDate,
+  generateUUID,
+  getFontColor,
+  showToast,
+  systemInfo,
+} from "../utils";
 import { Emoji, EmojiStyle } from "emoji-picker-react";
 import { UserContext } from "../contexts/UserContext";
-import { PushPinRounded } from "@mui/icons-material";
-import { USER_NAME_MAX_LENGTH } from "../constants";
+import {
+  AddTaskRounded,
+  DoNotDisturbAltRounded,
+  DoneRounded,
+  ErrorRounded,
+  LinkOff,
+  PushPinRounded,
+} from "@mui/icons-material";
+import { URL_REGEX, USER_NAME_MAX_LENGTH } from "../constants";
+import { CategoryBadge, CustomDialogTitle } from "../components";
+import Home from "./Home";
 
-//FIXME: make everything type safe
+//FIXME: make everything type-safe
 const SharePage = () => {
   const { user, setUser } = useContext(UserContext);
-  const { emojisStyle, settings } = user;
   const n = useNavigate();
   const location = useLocation();
   const queryParams = new URLSearchParams(location.search);
@@ -30,8 +57,10 @@ const SharePage = () => {
     if (taskParam) {
       try {
         const decodedTask = decodeURIComponent(taskParam);
-        const task = JSON.parse(decodedTask) as Task;
-
+        const task: Task = {
+          ...(JSON.parse(decodedTask) as Task),
+          id: generateUUID(),
+        };
         if (!isHexColor(task.color)) {
           setError(true);
           setErrorDetails("Invalid task color format.");
@@ -59,7 +88,6 @@ const SharePage = () => {
       if (decodedUserName.length > USER_NAME_MAX_LENGTH) {
         setError(true);
         setErrorDetails("User name is too long.");
-        console.log("User name is too long");
       }
       setUserName(decodedUserName);
     }
@@ -67,7 +95,7 @@ const SharePage = () => {
 
   useEffect(() => {
     document.title = `Todo App - Recieved Task ${taskData ? "(" + taskData.name + ")" : ""}`;
-  }, [[], taskData]);
+  }, [taskData]);
 
   const handleAddTask = () => {
     if (taskData) {
@@ -77,7 +105,7 @@ const SharePage = () => {
       if (taskData.category) {
         taskData.category.forEach((taskCategory) => {
           const existingCategoryIndex = updatedCategories.findIndex(
-            (cat) => cat.id === taskCategory.id
+            (cat) => cat.id === taskCategory.id,
           );
 
           if (existingCategoryIndex !== -1) {
@@ -97,68 +125,145 @@ const SharePage = () => {
           ...prevUser.tasks.filter(Boolean),
           {
             ...taskData,
-            id: new Date().getTime() + Math.floor(Math.random() * 1000),
+            id: generateUUID(),
             sharedBy: userName,
           },
         ],
       }));
 
       n("/");
-      toast.success((t) => (
-        <div onClick={() => toast.dismiss(t.id)}>
-          Added shared task - <b>{taskData.name}</b>
-        </div>
-      ));
+      showToast(
+        <div>
+          Added shared task - <b translate="no">{taskData.name}</b>
+        </div>,
+        {
+          icon: <AddTaskRounded />,
+        },
+      );
     }
   };
 
-  //TODO: finish UI
+  // Renders the task description with optional hyperlink parsing and text highlighting.
+  const renderTaskDescription = (task: Task): JSX.Element | null => {
+    if (!task || !task.description) {
+      return null;
+    }
 
+    const { description, color } = task;
+
+    const parts = description.split(URL_REGEX);
+
+    const descriptionWithLinks = parts.map((part, index) => {
+      if (index % 2 === 0) {
+        return part;
+      } else {
+        // Store link part in state
+        const url = new URL(part);
+        return (
+          <Tooltip title={part} key={index}>
+            <DescriptionLink clr={color} disabled>
+              <div>
+                <LinkOff sx={{ fontSize: "24px" }} /> {url.hostname}
+              </div>
+            </DescriptionLink>
+          </Tooltip>
+        );
+      }
+    });
+
+    return <div>{descriptionWithLinks}</div>;
+  };
 
   return (
     <div>
+      <Home />
       <Dialog
         open
         PaperProps={{
           style: {
-            borderRadius: "28px",
-            padding: "10px",
+            borderRadius: "24px",
+            padding: " 10px 6px",
             width: "100% !important",
           },
         }}
       >
         {!error && taskData ? (
           <>
-            <DialogTitle>Recieved Task</DialogTitle>
+            <CustomDialogTitle
+              title="Recieved Task"
+              subTitle="You can now include this task in your list"
+              icon={<AddTaskRounded />}
+            />
             <DialogContent>
-              <p>
-                <b>{userName}</b> shared you a task.
+              <p style={{ fontSize: "16px", marginLeft: "6px" }}>
+                <b translate="no">{userName}</b> shared you a task.
               </p>
-              <div
-                style={{
-                  background: taskData.color,
-                  color: getFontColorFromHex(taskData.color || ""),
-                  padding: "12px 24px",
-                  borderRadius: "22px",
-                  width: "300px",
-                  borderLeft: taskData.done ? "6px solid #40da25" : "none",
-                }}
+              <TaskContainer
+                done={taskData.done}
+                backgroundColor={taskData.color}
+                style={{ maxWidth: "600px", opacity: 1, padding: "16px 22px" }}
               >
-                <h3 style={{ display: "flex", alignItems: "center", gap: "6px", margin: "12px 0" }}>
-                  {taskData.pinned && <PushPinRounded />}
-                  {taskData?.emoji && <Emoji unified={taskData.emoji} emojiStyle={emojisStyle} />}
-                  {taskData.name}
-                </h3>
-                <p>{taskData.description}</p>
-                {taskData.deadline && (
-                  <p>
-                    <b>Deadline:</b> {new Date(taskData.deadline).toLocaleDateString()} {" • "}
-                    {new Date(taskData.deadline).toLocaleTimeString()} {" • "}{" "}
-                    {calculateDateDifference(new Date(taskData.deadline))}
-                  </p>
-                )}
-
-                {taskData.category && (
+                {taskData.emoji || taskData.done ? (
+                  <EmojiContainer clr={getFontColor(taskData.color)}>
+                    {taskData.done ? (
+                      <DoneRounded fontSize="large" />
+                    ) : user.emojisStyle === EmojiStyle.NATIVE ? (
+                      <div>
+                        <Emoji
+                          size={systemInfo.os === "iOS" ? 48 : 36}
+                          unified={taskData.emoji || ""}
+                          emojiStyle={EmojiStyle.NATIVE}
+                        />
+                      </div>
+                    ) : (
+                      <Emoji
+                        size={48}
+                        unified={taskData.emoji || ""}
+                        emojiStyle={user.emojisStyle}
+                      />
+                    )}
+                  </EmojiContainer>
+                ) : null}
+                <TaskInfo translate="no" style={{ marginRight: "14px" }}>
+                  {taskData.pinned && (
+                    <Pinned translate="yes">
+                      <PushPinRounded fontSize="small" /> &nbsp; Pinned
+                    </Pinned>
+                  )}
+                  <TaskHeader style={{ gap: "6px" }}>
+                    <TaskName done={taskData.done}>{taskData.name}</TaskName>
+                    <Tooltip
+                      title={new Intl.DateTimeFormat(navigator.language, {
+                        dateStyle: "full",
+                        timeStyle: "medium",
+                      }).format(new Date(taskData.date))}
+                    >
+                      <TaskDate>{formatDate(new Date(taskData.date))}</TaskDate>
+                    </Tooltip>
+                  </TaskHeader>
+                  <TaskDescription done={taskData.done}>
+                    {renderTaskDescription(taskData)}
+                  </TaskDescription>
+                  {taskData.deadline && (
+                    <TimeLeft done={taskData.done}>
+                      <RingAlarm
+                        fontSize="small"
+                        animate={new Date() > new Date(taskData.deadline) && !taskData.done}
+                        sx={{
+                          color: `${getFontColor(taskData.color)} !important`,
+                        }}
+                      />
+                      &nbsp;Deadline:&nbsp;
+                      {new Date(taskData.deadline).toLocaleDateString()} {" • "}
+                      {new Date(taskData.deadline).toLocaleTimeString()}
+                      {!taskData.done && (
+                        <>
+                          {" • "}
+                          {calculateDateDifference(new Date(taskData.deadline))}
+                        </>
+                      )}
+                    </TimeLeft>
+                  )}
                   <div
                     style={{
                       display: "flex",
@@ -166,53 +271,44 @@ const SharePage = () => {
                       gap: "4px 6px",
                       justifyContent: "left",
                       alignItems: "center",
-                      marginBottom: "12px",
                     }}
                   >
-                    {taskData.category.map((cat) => (
-                      <div key={cat.id}>
-                        <CategoryChip
-                          backgroundclr={cat.color}
-                          borderclr={getFontColorFromHex(taskData.color)}
-                          glow={settings[0].enableGlow}
-                          label={cat.name}
-                          size="medium"
-                          avatar={
-                            cat.emoji ? (
-                              <Avatar
-                                alt={cat.name}
-                                sx={{
-                                  background: "transparent",
-                                  borderRadius: "0px",
-                                }}
-                              >
-                                {cat.emoji &&
-                                  (emojisStyle === EmojiStyle.NATIVE ? (
-                                    <div>
-                                      <Emoji
-                                        size={18}
-                                        unified={cat.emoji}
-                                        emojiStyle={EmojiStyle.NATIVE}
-                                      />
-                                    </div>
-                                  ) : (
-                                    <Emoji size={20} unified={cat.emoji} emojiStyle={emojisStyle} />
-                                  ))}
-                              </Avatar>
-                            ) : (
-                              <></>
-                            )
-                          }
-                        />
-                      </div>
-                    ))}
+                    {taskData.category &&
+                      taskData.category.map((category) => (
+                        <div key={category.id}>
+                          <CategoryBadge
+                            category={category}
+                            borderclr={getFontColor(taskData.color)}
+                          />
+                        </div>
+                      ))}
                   </div>
-                )}
-              </div>
+                </TaskInfo>
+              </TaskContainer>
+              {taskData && taskData.description && taskData.description.match(URL_REGEX) ? (
+                <Alert sx={{ mt: "20px" }} severity="warning">
+                  <AlertTitle>This task contains the following links:</AlertTitle>{" "}
+                  {(() => {
+                    const links = taskData.description.match(URL_REGEX)?.map((link) => link);
+                    if (links) {
+                      const listFormatter = new Intl.ListFormat("en-US", {
+                        style: "long",
+                        type: "conjunction",
+                      });
+                      return (
+                        <span style={{ wordBreak: "break-all" }}>
+                          {listFormatter.format(links)}
+                        </span>
+                      );
+                    }
+                    return null;
+                  })()}
+                </Alert>
+              ) : null}
             </DialogContent>
             <DialogActions>
               <DialogBtn color="error" onClick={() => n("/")}>
-                Decline
+                <DoNotDisturbAltRounded /> &nbsp; Decline
               </DialogBtn>
               <DialogBtn
                 onClick={() => {
@@ -220,15 +316,19 @@ const SharePage = () => {
                   n("/");
                 }}
               >
-                Add Task
+                <AddTaskRounded /> &nbsp; Add Task
               </DialogBtn>
             </DialogActions>
           </>
         ) : (
           <>
-            <DialogTitle>Something went wrong</DialogTitle>
+            <CustomDialogTitle
+              title="Something went wrong"
+              subTitle="The shared task couldn't be processed."
+              onClose={() => n("/")}
+              icon={<ErrorRounded />}
+            />
             <DialogContent>
-              {/* TODO app improt */}
               <p>
                 Oops! Something went wrong while processing the shared task.{" "}
                 {errorDetails && (
@@ -249,4 +349,3 @@ const SharePage = () => {
 };
 
 export default SharePage;
-

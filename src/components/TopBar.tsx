@@ -1,19 +1,23 @@
 import styled from "@emotion/styled";
-import { ArrowBackIosNew } from "@mui/icons-material";
+import { ArrowBackIosNewRounded } from "@mui/icons-material";
+import { IconButton } from "@mui/material";
 import { useNavigate } from "react-router-dom";
-import { ColorPalette } from "../styles";
+import { getFontColor } from "../utils";
 
 interface TopBarProps {
   title: string;
 }
 
+/**
+ * Component for displaying a top bar with a title and a back button.
+ * @param {string} title - Title of page
+ */
 export const TopBar = ({ title }: TopBarProps) => {
   const n = useNavigate();
-  const handleBackClick = () => n("/");
   return (
     <Container>
-      <BackBtn onClick={handleBackClick}>
-        <ArrowBackIosNew />
+      <BackBtn size="large" aria-label="Back" onClick={() => n("/")}>
+        <ArrowIcon />
       </BackBtn>
       <Title>{title}</Title>
     </Container>
@@ -28,8 +32,15 @@ const Container = styled.div`
   z-index: 99;
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
-  background-color: #232e58c1;
+  background: ${({ theme }) => theme.secondary + "c1"};
+  transition:
+    background 0.3s,
+    color 0.3s;
   margin-bottom: 48px;
+`;
+
+const ArrowIcon = styled(ArrowBackIosNewRounded)`
+  color: ${({ theme }) => getFontColor(theme.secondary)};
 `;
 
 const Title = styled.h2`
@@ -39,25 +50,9 @@ const Title = styled.h2`
   padding: 4px 0 8px 0;
   text-shadow: 0 0 24px #00000068;
 `;
-const BackBtn = styled.button`
+const BackBtn = styled(IconButton)`
   position: absolute;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-
-  font-size: 20px;
-  padding: 8px 12px;
-  background: transparent;
-  color: ${ColorPalette.fontLight};
-  border: none;
-  border-radius: 12px;
-  cursor: pointer;
-  transition: 0.2s all;
-
-  text-shadow: 0 0 24px #00000068;
-  &:hover {
-    opacity: 0.8;
-  }
+  color: ${({ theme }) => getFontColor(theme.secondary)};
   @media (max-width: 1024px) {
     margin-top: 4px;
   }

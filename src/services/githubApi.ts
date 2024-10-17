@@ -1,16 +1,15 @@
-//  Github Api
+import type { GitHubBranchResponse, GitHubInfoResponse, GitHubRepoResponse } from "../types/github";
+import { showToast } from "../utils";
 
-interface GitHubRepoInfo {
-  [key: string]: any;
-}
-
-export const fetchGitHubInfo = async (): Promise<{
-  repoData: GitHubRepoInfo;
-  branchData: GitHubRepoInfo;
-}> => {
+/**
+ * Function to fetch GitHub repository and branch information.
+ * @returns {Promise<GitHubInfoResponse>} Promise that resolves to an object containing repository and branch data.
+ */
+export const fetchGitHubInfo = async (): Promise<GitHubInfoResponse> => {
   const username = "thapasijan171";
   const repo = "TodoApp";
-  const branch = "gh-pages";
+  const branch = "main";
+
   try {
     const [repoResponse, branchResponse] = await Promise.all([
       fetch(`https://api.github.com/repos/${username}/${repo}`),
@@ -19,16 +18,32 @@ export const fetchGitHubInfo = async (): Promise<{
 
     if (repoResponse.ok && branchResponse.ok) {
       const [repoData, branchData] = await Promise.all([
-        repoResponse.json(),
-        branchResponse.json(),
+        repoResponse.json() as Promise<GitHubRepoResponse>,
+        branchResponse.json() as Promise<GitHubBranchResponse>,
       ]);
+      console.log(repoData);
 
-      return { repoData, branchData };
+      return {
+        repoData,
+        branchData,
+      };
     } else {
-      throw new Error("Failed to fetch repository information");
+      // Check if rate limit exceeded
+      if (repoResponse.status === 403 && branchResponse.status === 403) {
+        showToast("Github API rate limit exceeded temporarily for your IP address.", {
+          type: "error",
+          disableVibrate: true,
+        });
+      } else {
+        throw new Error("Failed to fetch repository or branch information");
+      }
     }
   } catch (error) {
     console.error(error);
-    return { repoData: {}, branchData: {} };
+    if (navigator.onLine) {
+      showToast("Failed to fetch Github API.", { type: "error", disableVibrate: true });
+    }
   }
+  // Return a default value in case of error
+  return { repoData: {} as GitHubRepoResponse, branchData: {} as GitHubBranchResponse };
 };

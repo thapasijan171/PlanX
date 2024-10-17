@@ -1,4 +1,11 @@
-import { EmojiStyle } from "emoji-picker-react";
+import type { EmojiStyle } from "emoji-picker-react";
+
+/**
+ * Represents a universally unique identifier.
+ */
+export type UUID = ReturnType<typeof crypto.randomUUID>;
+
+export type DarkModeOptions = "system" | "auto" | "light" | "dark";
 
 /**
  * Represents a user in the application.
@@ -6,19 +13,21 @@ import { EmojiStyle } from "emoji-picker-react";
 export interface User {
   name: string | null;
   createdAt: Date;
-  profilePicture: string | URL | null;
+  profilePicture: string | null;
   emojisStyle: EmojiStyle;
   tasks: Task[];
   categories: Category[];
-  // colors: string[];
-  settings: AppSettings[];
+  colorList: string[];
+  settings: AppSettings;
+  theme: string;
+  darkmode: DarkModeOptions;
 }
 
 /**
  * Represents a task in the application.
  */
 export interface Task {
-  id: number;
+  id: UUID;
   done: boolean;
   pinned: boolean;
   name: string;
@@ -31,6 +40,8 @@ export interface Task {
   lastSave?: Date;
   sharedBy?: string;
 }
+
+// export type Emoji = Omit<
 //   EmojiClickData,
 //   "activeSkinTone" | "names" | "unifiedWithoutSkinTone" | "getImageUrl"
 // > & {
@@ -43,7 +54,7 @@ export interface Task {
  * Represents a category in the application.
  */
 export interface Category {
-  id: number;
+  id: UUID;
   name: string;
   emoji?: string;
   color: string;
@@ -56,15 +67,9 @@ export interface AppSettings {
   enableCategories: boolean;
   doneToBottom: boolean;
   enableGlow: boolean;
+  simpleEmojiPicker: boolean;
   enableReadAloud: boolean;
+  appBadge: boolean;
   voice: string;
   voiceVolume: number;
-}
-
-/**
- * Represents the props for a component that requires user-related data.
- */
-export interface UserProps {
-  user: User; // User data
-  setUser: React.Dispatch<React.SetStateAction<User>>; // Function update from user data
 }

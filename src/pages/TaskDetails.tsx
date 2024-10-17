@@ -1,13 +1,13 @@
 import { useParams } from "react-router-dom";
-import { TopBar } from "../components";
+import { CategoryBadge, TopBar } from "../components";
 import styled from "@emotion/styled";
-import { CategoryChip } from "../styles";
-import { Avatar } from "@mui/material";
+import { PathName } from "../styles";
 import NotFound from "./NotFound";
 import { Clear, Done } from "@mui/icons-material";
-import { Emoji, EmojiStyle } from "emoji-picker-react";
+import { Emoji } from "emoji-picker-react";
 import { useContext, useEffect } from "react";
 import { UserContext } from "../contexts/UserContext";
+import { getColorName } from "ntc-ts";
 
 const TaskDetails = () => {
   const { user } = useContext(UserContext);
@@ -16,19 +16,34 @@ const TaskDetails = () => {
   const formattedId = id?.replace(".", "");
   const task = tasks.find((task) => task.id.toString().replace(".", "") === formattedId);
 
+  useEffect(() => {
+    document.title = `Todo App - ${task?.name || "Task Details"}`;
+  }, [task?.name]);
+
   if (!task) {
-    return <NotFound />;
+    return (
+      <NotFound
+        message={
+          <div>
+            Task with id <PathName>{formattedId}</PathName> was not found.
+          </div>
+        }
+      />
+    );
   }
 
-  useEffect(() => {
-    document.title = `Todo App - ${task.name}`;
-  }, []);
+  const dateFormatter = new Intl.DateTimeFormat(navigator.language, {
+    dateStyle: "full",
+    timeStyle: "short",
+  });
 
   return (
     <>
       <TopBar title="Task Details" />
-      <Container style={{ boxShadow: `0 0 128px -8px ${task.color}` }}>
-        <TaskName>Task: {task.name}</TaskName>
+      <Container>
+        <TaskName>
+          Task: <span translate="no">{task.name}</span>
+        </TaskName>
         <TaskTable>
           <tbody>
             <TableRow>
@@ -44,31 +59,35 @@ const TaskDetails = () => {
                 )}
               </TableData>
             </TableRow>
-
+            <TableRow>
+              <TableHeader>ID:</TableHeader>
+              <TableData>{task?.id}</TableData>
+            </TableRow>
             <TableRow>
               <TableHeader>Description:</TableHeader>
-              <TableData>{task?.description}</TableData>
+              <TableData translate="no">{task?.description}</TableData>
             </TableRow>
             <TableRow>
               <TableHeader>Color:</TableHeader>
               <TableData>
-                <ColorSquare clr={task.color} /> {task.color.toUpperCase()}
+                <ColorSquare clr={task.color} />
+                {getColorName(task.color).name} ({task.color.toUpperCase()})
               </TableData>
             </TableRow>
             <TableRow>
               <TableHeader>Created:</TableHeader>
-              <TableData>{new Date(task?.date || "").toLocaleString()}</TableData>
+              <TableData>{dateFormatter.format(new Date(task.date))}</TableData>
             </TableRow>
             {task?.lastSave && (
               <TableRow>
                 <TableHeader>Last edited:</TableHeader>
-                <TableData>{new Date(task?.lastSave || "").toLocaleString()}</TableData>
+                <TableData>{dateFormatter.format(new Date(task.lastSave))}</TableData>
               </TableRow>
             )}
             {task?.deadline && (
               <TableRow>
                 <TableHeader>Task deadline:</TableHeader>
-                <TableData>{new Date(task?.deadline || "").toLocaleString()}</TableData>
+                <TableData>{dateFormatter.format(new Date(task.deadline))}</TableData>
               </TableRow>
             )}
             <TableRow>
@@ -89,47 +108,18 @@ const TaskDetails = () => {
                 <TableData>{task.sharedBy}</TableData>
               </TableRow>
             )}
-            <TableRow>
-              <TableHeader>Categories:</TableHeader>
-              <TableData>
-                <CategoryContainer>
-                  {task?.category?.map((cat) => (
-                    <CategoryChip
-                      key={cat.id}
-                      backgroundclr={cat.color}
-                      glow={false}
-                      label={cat.name}
-                      avatar={
-                        cat.emoji ? (
-                          <Avatar
-                            alt={cat.name}
-                            sx={{
-                              background: "transparent",
-                              borderRadius: "0px",
-                            }}
-                          >
-                            {cat.emoji &&
-                              (emojisStyle === EmojiStyle.NATIVE ? (
-                                <div>
-                                  <Emoji
-                                    size={18}
-                                    unified={cat.emoji}
-                                    emojiStyle={EmojiStyle.NATIVE}
-                                  />
-                                </div>
-                              ) : (
-                                <Emoji size={20} unified={cat.emoji} emojiStyle={emojisStyle} />
-                              ))}
-                          </Avatar>
-                        ) : (
-                          <></>
-                        )
-                      }
-                    />
-                  ))}
-                </CategoryContainer>
-              </TableData>
-            </TableRow>
+            {task.category && task.category.length > 0 && (
+              <TableRow>
+                <TableHeader>Categories:</TableHeader>
+                <TableData>
+                  <CategoryContainer>
+                    {task?.category?.map((category) => (
+                      <CategoryBadge key={category.id} category={category} glow={false} />
+                    ))}
+                  </CategoryContainer>
+                </TableData>
+              </TableRow>
+            )}
           </tbody>
         </TaskTable>
       </Container>
@@ -146,15 +136,11 @@ const Container = styled.div`
   border-radius: 32px;
   margin: 0 auto;
   margin-top: 100px;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 0px 24px 2px rgba(0, 0, 0, 0.3);
 
   @media (min-width: 768px) {
     padding: 24px;
     width: 70%;
-  }
-
-  @media (min-width: 1200px) {
-    width: 50%;
   }
 `;
 
@@ -175,7 +161,7 @@ const TaskTable = styled.table`
 `;
 
 const TableRow = styled.tr`
-  border-bottom: 2px solid #d9d9d9bc;
+  border-bottom: 2px solid ${({ theme }) => theme.primary}41;
 
   &:last-child {
     border-bottom: none;
@@ -199,7 +185,7 @@ const TableData = styled.td`
   align-items: center;
   gap: 6px;
   font-size: 1em;
-
+  word-break: break-all;
   @media (min-width: 768px) {
     font-size: 1.1em;
   }
@@ -208,7 +194,7 @@ const TableData = styled.td`
 const ColorSquare = styled.div<{ clr: string }>`
   width: 20px;
   height: 20px;
-  border-radius: 4px;
+  border-radius: 6px;
   background-color: ${({ clr }) => clr};
 `;
 

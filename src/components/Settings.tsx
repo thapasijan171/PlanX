@@ -1,9 +1,27 @@
-import React, { useContext, useEffect, useState } from "react";
+import { useTheme } from "@emotion/react";
+import styled from "@emotion/styled";
+import {
+  BrightnessAutoRounded,
+  CachedRounded,
+  DarkModeRounded,
+  DeleteRounded,
+  ExpandMoreRounded,
+  Google,
+  LightModeRounded,
+  Microsoft,
+  PersonalVideoRounded,
+  SettingsRounded,
+  VolumeDown,
+  VolumeOff,
+  VolumeUp,
+  WifiOffRounded,
+} from "@mui/icons-material";
 import {
   Box,
+  Button,
+  Chip,
   Dialog,
   DialogActions,
-  DialogTitle,
   FormControl,
   FormControlLabel,
   FormGroup,
@@ -17,31 +35,40 @@ import {
   Switch,
   Tooltip,
 } from "@mui/material";
-import { AppSettings } from "../types/user";
-import { DialogBtn } from "../styles";
-import styled from "@emotion/styled";
 import { Emoji, EmojiStyle } from "emoji-picker-react";
-import { useOnlineStatus } from "../hooks/useOnlineStatus";
-import { CachedRounded, VolumeDown, VolumeOff, VolumeUp, WifiOff } from "@mui/icons-material";
+import { useContext, useEffect, useState } from "react";
 import { defaultUser } from "../constants/defaultUser";
 import { UserContext } from "../contexts/UserContext";
-import { iOS } from "../utils/iOS";
+import { useOnlineStatus } from "../hooks/useOnlineStatus";
+import { useSystemTheme } from "../hooks/useSystemTheme";
+import { DialogBtn } from "../styles";
+import type { AppSettings, DarkModeOptions } from "../types/user";
+import { isDark, showToast, systemInfo } from "../utils";
+import { CustomDialogTitle } from "./DialogTitle";
 
 interface SettingsProps {
   open: boolean;
   onClose: () => void;
 }
 
-export const SettingsDialog = ({ open, onClose }: SettingsProps) => {
+//TODO: Redesign settings component to have tabs on the left side
+
+export const SettingsDialog: React.FC<SettingsProps> = ({ open, onClose }) => {
   const { user, setUser } = useContext(UserContext);
-  const [settings, setSettings] = useState<AppSettings>(user.settings[0]);
-  const [lastStyle] = useState<EmojiStyle>(user.emojisStyle);
+  const { settings, emojisStyle, darkmode } = user;
+  const [userSettings, setUserSettings] = useState<AppSettings>(settings);
+  const [lastStyle] = useState<EmojiStyle>(emojisStyle);
 
   const [availableVoices, setAvailableVoices] = useState<SpeechSynthesisVoice[]>([]);
-  const [voiceVolume, setVoiceVolume] = useState<number>(user.settings[0].voiceVolume);
-  const [prevVoiceVol, setPrevVoiceVol] = useState<number>(user.settings[0].voiceVolume);
+  const [voiceVolume, setVoiceVolume] = useState<number>(settings.voiceVolume);
+  const [prevVoiceVol, setPrevVoiceVol] = useState<number>(settings.voiceVolume);
+  const [showLocalVoices, setShowLocalVoices] = useState<boolean>(false);
+
+  const [storageUsage, setStorageUsage] = useState<number | undefined>(undefined);
 
   const isOnline = useOnlineStatus();
+  const systemTheme = useSystemTheme();
+  const theme = useTheme();
 
   // Array of available emoji styles with their labels
   const emojiStyles: { label: string; style: EmojiStyle }[] = [
@@ -52,43 +79,90 @@ export const SettingsDialog = ({ open, onClose }: SettingsProps) => {
     { label: "Native", style: EmojiStyle.NATIVE },
   ];
 
+  // Array of available dark mode options
+  const darkModeOptions: {
+    label: string;
+    mode: DarkModeOptions;
+    icon: JSX.Element;
+  }[] = [
+    {
+      label: "Auto",
+      mode: "auto",
+      icon: <BrightnessAutoRounded />,
+    },
+    {
+      label: "System",
+      mode: "system",
+      icon: <PersonalVideoRounded />,
+    },
+    {
+      label: "Light",
+      mode: "light",
+      icon: <LightModeRounded />,
+    },
+    {
+      label: "Dark",
+      mode: "dark",
+      icon: <DarkModeRounded />,
+    },
+  ];
+
+  // function to get the flag emoji for a given country code
+  const getFlagEmoji = (countryCode: string): string =>
+    typeof countryCode === "string"
+      ? String.fromCodePoint(
+          ...[...countryCode.toUpperCase()].map((x) => 0x1f1a5 + x.charCodeAt(0)),
+        )
+      : "";
+
+  // Function to get the available speech synthesis voices
+  // https://developer.mozilla.org/en-US/docs/Web/API/SpeechSynthesis
   const getAvailableVoices = (): SpeechSynthesisVoice[] => {
     const voices = window.speechSynthesis.getVoices();
-    const voiceInfoArray = [];
-    console.log(voices);
-
+    const voiceInfoArray: SpeechSynthesisVoice[] = [];
     for (const voice of voices) {
       voiceInfoArray.push(voice);
     }
-
     return voiceInfoArray;
   };
 
   useEffect(() => {
     const availableVoices = getAvailableVoices();
     setAvailableVoices(availableVoices ?? []);
+
+    const getStorageUsage = async () => {
+      const storageUsage = await navigator.storage.estimate();
+      setStorageUsage(storageUsage.usage);
+    };
+    getStorageUsage();
   }, []);
 
   // Ensure the voices are loaded before calling getAvailableVoices
   window.speechSynthesis.onvoiceschanged = () => {
     const availableVoices = getAvailableVoices();
     setAvailableVoices(availableVoices ?? []);
-    // console.log(availableVoices);
   };
 
   // Handler for updating individual setting options
   const handleSettingChange =
     (name: keyof AppSettings) => (event: React.ChangeEvent<HTMLInputElement>) => {
+      const isChecked = event.target.checked;
       // cancel read aloud
-      name === "enableReadAloud" && window.speechSynthesis.cancel();
-      const updatedSettings = {
-        ...settings,
-        [name]: event.target.checked,
+      if (name === "enableReadAloud") {
+        window.speechSynthesis.cancel();
+      }
+      if (name === "appBadge" && navigator.clearAppBadge && !isChecked) {
+        navigator.clearAppBadge();
+      }
+      const updatedSettings: AppSettings = {
+        ...userSettings,
+        voice: settings.voice, // Bug fix: reset voice to default when changing other settings
+        [name]: isChecked,
       };
-      setSettings(updatedSettings);
+      setUserSettings(updatedSettings);
       setUser((prevUser) => ({
         ...prevUser,
-        settings: [updatedSettings],
+        settings: updatedSettings,
       }));
     };
 
@@ -100,38 +174,44 @@ export const SettingsDialog = ({ open, onClose }: SettingsProps) => {
       emojisStyle: selectedEmojiStyle,
     }));
   };
+
+  const handleDarkModeChange = (event: SelectChangeEvent<unknown>) => {
+    const selectedDarkMode = event.target.value as DarkModeOptions;
+    setUser((prevUser) => ({
+      ...prevUser,
+      darkmode: selectedDarkMode,
+    }));
+  };
+
   const handleVoiceChange = (event: SelectChangeEvent<unknown>) => {
     // Handle the selected voice
-    const selectedVoice = availableVoices.find((voice) => voice.name === event.target.value);
-
+    const selectedVoice = availableVoices.find(
+      (voice) => voice.name === (event.target.value as string),
+    );
     if (selectedVoice) {
-      console.log("Selected Voice:", selectedVoice);
-
       // Update the user settings with the selected voice
       setUser((prevUser) => ({
         ...prevUser,
-        settings: [
-          {
-            ...prevUser.settings[0],
-            voice: selectedVoice.name,
-          },
-        ],
+        settings: {
+          ...prevUser.settings,
+          voice: selectedVoice.name,
+        },
       }));
     }
   };
-  // Function to handle changes in voice volume
-  const handleVoiceVolChange = (e: Event, value: number | number[]) => {
-    e.preventDefault();
-    setVoiceVolume(value as number);
+
+  // Function to handle changes in voice volume after mouse up
+  const handleVoiceVolCommitChange = (
+    _event: Event | React.SyntheticEvent<Element, Event>,
+    value: number | number[],
+  ) => {
     // Update user settings with the new voice volume
     setUser((prevUser) => ({
       ...prevUser,
-      settings: [
-        {
-          ...prevUser.settings[0],
-          voiceVolume: value as number,
-        },
-      ],
+      settings: {
+        ...prevUser.settings,
+        voiceVolume: value as number,
+      },
     }));
   };
 
@@ -139,43 +219,81 @@ export const SettingsDialog = ({ open, onClose }: SettingsProps) => {
   const handleMuteClick = () => {
     // Retrieve the current voice volume from user settings
     const vol = voiceVolume;
-
     // Save the previous voice volume before muting
     setPrevVoiceVol(vol);
-
     const newVoiceVolume =
-      vol === 0 ? (prevVoiceVol !== 0 ? prevVoiceVol : defaultUser.settings[0].voiceVolume) : 0;
-
+      vol === 0 ? (prevVoiceVol !== 0 ? prevVoiceVol : defaultUser.settings.voiceVolume) : 0;
     setUser((prevUser) => ({
       ...prevUser,
-      settings: [
-        {
-          ...prevUser.settings[0],
-          voiceVolume: newVoiceVolume,
-        },
-      ],
+      settings: {
+        ...prevUser.settings,
+        voiceVolume: newVoiceVolume,
+      },
     }));
     setVoiceVolume(newVoiceVolume);
   };
 
+  const getLanguageRegion = (lang: string) => {
+    if (!lang) {
+      // If lang is undefined or falsy, return an empty string
+      return "";
+    }
+    const langParts = lang.split("-");
+    if (langParts.length > 1) {
+      try {
+        return new Intl.DisplayNames([lang], { type: "region" }).of(langParts[1]);
+      } catch (error) {
+        console.error("Error:", error);
+        // Return the language itself if there's an error
+        return lang;
+      }
+    } else {
+      // If region is not specified, return the language itself
+      return lang;
+    }
+  };
+
+  const filteredVoices: SpeechSynthesisVoice[] = showLocalVoices
+    ? availableVoices.filter((voice) => voice.lang.startsWith(navigator.language))
+    : availableVoices;
+
   return (
-    <Dialog
-      open={open}
-      onClose={onClose}
-      PaperProps={{
-        style: {
-          borderRadius: "24px",
-          padding: "12px",
-        },
-      }}
-    >
-      <DialogTitle sx={{ fontWeight: 600 }}>Settings</DialogTitle>
+    <Dialog open={open} onClose={onClose}>
+      <CustomDialogTitle
+        title="Settings"
+        subTitle="Manage your settings and preferences."
+        icon={<SettingsRounded />}
+        onClose={onClose}
+      />
       <Container>
+        <FormGroup>
+          <FormControl>
+            <FormLabel>Dark Mode</FormLabel>
+            <StyledSelect
+              value={darkmode}
+              onChange={handleDarkModeChange}
+              IconComponent={ExpandMoreRounded}
+            >
+              {darkModeOptions.map((option) => (
+                <StyledMenuItem key={option.mode} value={option.mode}>
+                  {option.icon}&nbsp;{option.label}
+                  {option.mode === "system" && ` (${systemTheme})`}
+                  {option.mode === "auto" && ` (${isDark(theme.secondary) ? "dark" : "light"})`}
+                </StyledMenuItem>
+              ))}
+            </StyledSelect>
+          </FormControl>
+        </FormGroup>
         {/* Select component to choose the emoji style */}
         <FormGroup>
           <FormControl>
             <FormLabel>Emoji Settings</FormLabel>
-            <StyledSelect value={user.emojisStyle} onChange={handleEmojiStyleChange} translate="no">
+            <StyledSelect
+              value={emojisStyle}
+              onChange={handleEmojiStyleChange}
+              translate="no"
+              IconComponent={ExpandMoreRounded}
+            >
               {/* Show a disabled menu item when offline, indicating that the style can't be changed */}
               {!isOnline && (
                 <MenuItem
@@ -187,52 +305,69 @@ export const SettingsDialog = ({ open, onClose }: SettingsProps) => {
                     fontWeight: 500,
                   }}
                 >
-                  <WifiOff /> You can't change the emoji style <br /> when you are offline
+                  <WifiOffRounded /> You can't change the emoji style <br /> when you are offline.
                 </MenuItem>
               )}
 
               {emojiStyles.map((style) => (
-                <MenuItem
+                <StyledMenuItem
                   key={style.style}
                   value={style.style}
                   translate="no"
-                  // Disable non-native styles when offline or if they are not the default style or last selected style
-                  // This prevents users from selecting styles that require fetching external resources (emojis) when offline,
-                  // as those emojis may not load without an internet connection.
-                  // 
                   disabled={
                     !isOnline &&
                     style.style !== EmojiStyle.NATIVE &&
                     style.style !== defaultUser.emojisStyle &&
                     style.style !== lastStyle
                   }
-                  sx={{
-                    padding: "12px 20px",
-                    borderRadius: "12px",
-                    margin: "8px",
-                    display: "flex",
-                    gap: "4px",
-                  }}
                 >
                   <Emoji size={24} unified="1f60e" emojiStyle={style.style} />
                   &nbsp;
                   {/* Space For Native Emoji */}
                   {style.style === EmojiStyle.NATIVE && "\u00A0"}
                   {style.label}
-                </MenuItem>
+                </StyledMenuItem>
               ))}
             </StyledSelect>
+
+            <Tooltip title="Emoji picker will only show frequently used emojis">
+              <FormGroup>
+                <StyledFormLabel
+                  sx={{ opacity: userSettings.simpleEmojiPicker ? 1 : 0.8 }}
+                  control={
+                    <Switch
+                      checked={userSettings.simpleEmojiPicker}
+                      onChange={handleSettingChange("simpleEmojiPicker")}
+                    />
+                  }
+                  label="Simple Emoji Picker"
+                />
+              </FormGroup>
+            </Tooltip>
           </FormControl>
+          <Tooltip title="This will delete data about frequently used emojis">
+            <Button
+              color="error"
+              variant="outlined"
+              sx={{ my: "12px", p: "12px", borderRadius: "18px" }}
+              onClick={() => {
+                localStorage.removeItem("epr_suggested");
+                showToast("Deleted emoji data.");
+              }}
+            >
+              <DeleteRounded /> &nbsp; Clear Emoji Data
+            </Button>
+          </Tooltip>
         </FormGroup>
 
         {/* Switch components to control different app settings */}
         <FormGroup>
           <FormLabel>App Settings</FormLabel>
-          <FormControlLabel
-            sx={{ opacity: settings.enableCategories ? 1 : 0.8 }}
+          <StyledFormLabel
+            sx={{ opacity: userSettings.enableCategories ? 1 : 0.8 }}
             control={
               <Switch
-                checked={settings.enableCategories}
+                checked={userSettings.enableCategories}
                 onChange={handleSettingChange("enableCategories")}
               />
             }
@@ -240,33 +375,61 @@ export const SettingsDialog = ({ open, onClose }: SettingsProps) => {
           />
         </FormGroup>
         <FormGroup>
-          <FormControlLabel
-            sx={{ opacity: settings.enableGlow ? 1 : 0.8 }}
+          <StyledFormLabel
+            sx={{ opacity: userSettings.enableGlow ? 1 : 0.8 }}
             control={
-              <Switch checked={settings.enableGlow} onChange={handleSettingChange("enableGlow")} />
+              <Switch
+                checked={userSettings.enableGlow}
+                onChange={handleSettingChange("enableGlow")}
+              />
             }
             label="Enable Glow Effect"
           />
         </FormGroup>
         <FormGroup>
-          <FormControlLabel
-            sx={{ opacity: settings.enableReadAloud ? 1 : 0.8 }}
+          <StyledFormLabel
+            sx={{ opacity: userSettings.enableReadAloud ? 1 : 0.8 }}
             control={
               <Switch
-                checked={settings.enableReadAloud}
+                checked={"speechSynthesis" in window && userSettings.enableReadAloud ? true : false}
                 onChange={handleSettingChange("enableReadAloud")}
+                disabled={"speechSynthesis" in window ? false : true}
               />
             }
             label="Enable Read Aloud"
           />
         </FormGroup>
 
+        {"clearAppBadge" in navigator &&
+          window.matchMedia("(display-mode: standalone)").matches && (
+            <Tooltip
+              title={
+                "setAppBadge" in navigator
+                  ? "This will show number of not done tasks in app icon if PWA is installed."
+                  : "App Badge is not supported"
+              }
+            >
+              <FormGroup>
+                <StyledFormLabel
+                  sx={{ opacity: userSettings.appBadge ? 1 : 0.8 }}
+                  control={
+                    <Switch
+                      checked={"setAppBadge" in navigator && userSettings.appBadge ? true : false}
+                      onChange={handleSettingChange("appBadge")}
+                      disabled={"setAppBadge" in navigator ? false : true}
+                    />
+                  }
+                  label="Enable App Badge"
+                />
+              </FormGroup>
+            </Tooltip>
+          )}
         <FormGroup>
-          <FormControlLabel
-            sx={{ opacity: settings.doneToBottom ? 1 : 0.8 }}
+          <StyledFormLabel
+            sx={{ opacity: userSettings.doneToBottom ? 1 : 0.8 }}
             control={
               <Switch
-                checked={settings.doneToBottom}
+                checked={userSettings.doneToBottom}
                 onChange={handleSettingChange("doneToBottom")}
               />
             }
@@ -274,18 +437,29 @@ export const SettingsDialog = ({ open, onClose }: SettingsProps) => {
           />
         </FormGroup>
 
-        {user.settings[0].enableReadAloud && (
+        {settings.enableReadAloud && (
           <FormGroup>
             <FormControl>
               <FormLabel>Voice Settings</FormLabel>
-
-              {availableVoices.length !== 0 ? (
+              <StyledFormLabel
+                sx={{ opacity: showLocalVoices ? 1 : 0.8, maxWidth: "300px" }}
+                control={
+                  <Switch
+                    checked={showLocalVoices}
+                    onChange={() => setShowLocalVoices((prev) => !prev)}
+                  />
+                }
+                label={`Local language voices only (${
+                  getLanguageRegion(navigator.language) || "?"
+                })`}
+              />
+              {filteredVoices.length !== 0 ? (
                 <StyledSelect
-                  // Set the value to the first voice in the availableVoices array
-                  value={user.settings[0].voice}
+                  value={settings.voice}
                   variant="outlined"
                   onChange={handleVoiceChange}
                   translate="no"
+                  IconComponent={ExpandMoreRounded}
                   MenuProps={{
                     PaperProps: {
                       style: {
@@ -295,22 +469,7 @@ export const SettingsDialog = ({ open, onClose }: SettingsProps) => {
                     },
                   }}
                 >
-                  {/* <MenuItem
-                    disabled
-                    sx={{
-                      opacity: "1 !important",
-                      fontWeight: 500,
-                      position: "sticky !important",
-                      top: 0,
-                      background: "white",
-                      zIndex: 99,
-                      margin: 0,
-                    }}
-                  >
-                    <Switch checked /> Show only local language voices
-                  </MenuItem> */}
-                  {/* Map over available voices to create MenuItem components */}
-                  {availableVoices.map((voice) => (
+                  {filteredVoices.map((voice) => (
                     <MenuItem
                       key={voice.name}
                       value={voice.name}
@@ -320,24 +479,35 @@ export const SettingsDialog = ({ open, onClose }: SettingsProps) => {
                         borderRadius: "8px",
                       }}
                     >
-                      {voice.name} &nbsp;
-                      <span style={{ fontWeight: 500 }}>
-                        {/* Display the region of the voice's language using Intl.DisplayNames */}
-                        {new Intl.DisplayNames([voice.lang], { type: "region" }).of(
-                          voice.lang.split("-")[1]
-                        )}
-                      </span>
-                      &nbsp;
-                      {/* <span style={{ fontSize: "14px", fontWeight: 300 }}> ({voice.lang})</span>
-                      &nbsp; */}
-                      {voice.default && !iOS && <span style={{ fontWeight: 600 }}>Default</span>}
+                      {voice.name.startsWith("Google") && <Google />}
+                      {voice.name.startsWith("Microsoft") && <Microsoft />} &nbsp;{" "}
+                      {/* Remove Google or Microsoft at the beginning and anything within parentheses */}
+                      {voice.name.replace(/^(Google|Microsoft)\s*|\([^()]*\)/gi, "")} &nbsp;
+                      {/* windows does not display flag emotes correctly */}
+                      {!/Windows NT 10/.test(navigator.userAgent) ? (
+                        <Chip
+                          sx={{ fontWeight: 500, padding: "4px" }}
+                          label={getLanguageRegion(voice.lang || "")}
+                          icon={
+                            <span style={{ fontSize: "16px" }}>
+                              {getFlagEmoji(voice.lang.split("-")[1] || "")}
+                            </span>
+                          }
+                        />
+                      ) : (
+                        <span style={{ fontWeight: 500 }}>
+                          {getLanguageRegion(voice.lang || "")}
+                        </span>
+                      )}
+                      {voice.default && systemInfo.os !== "iOS" && systemInfo.os !== "macOS" && (
+                        <span style={{ fontWeight: 600 }}>&nbsp;Default</span>
+                      )}
                     </MenuItem>
                   ))}
                 </StyledSelect>
               ) : (
                 <NoVoiceStyles>
                   There are no voice styles available.
-                  {/* Try to refresh the page. */}
                   <Tooltip title="Refetch voices">
                     <IconButton
                       size="large"
@@ -355,14 +525,11 @@ export const SettingsDialog = ({ open, onClose }: SettingsProps) => {
             <Box>
               <div style={{ display: "flex", justifyContent: "center", alignItems: "center" }}>
                 <VolumeSlider spacing={2} direction="row" alignItems="center">
-                  <Tooltip
-                    title={user.settings[0].voiceVolume ? "Mute" : "Unmute"}
-                    onClick={handleMuteClick}
-                  >
-                    <IconButton sx={{ color: "black" }}>
-                      {user.settings[0].voiceVolume === 0 ? (
+                  <Tooltip title={voiceVolume ? "Mute" : "Unmute"} onClick={handleMuteClick}>
+                    <IconButton>
+                      {voiceVolume === 0 ? (
                         <VolumeOff />
-                      ) : user.settings[0].voiceVolume <= 0.4 ? (
+                      ) : voiceVolume <= 0.4 ? (
                         <VolumeDown />
                       ) : (
                         <VolumeUp />
@@ -371,16 +538,17 @@ export const SettingsDialog = ({ open, onClose }: SettingsProps) => {
                   </Tooltip>
                   <Slider
                     sx={{
-                      width: "200px",
+                      width: "100%",
                     }}
                     value={voiceVolume}
-                    onChange={handleVoiceVolChange}
+                    onChange={(_event, value) => setVoiceVolume(value as number)}
+                    onChangeCommitted={handleVoiceVolCommitChange}
                     min={0}
                     max={1}
                     step={0.01}
                     aria-label="Volume Slider"
                     valueLabelFormat={() => {
-                      const vol = Math.floor(user.settings[0].voiceVolume * 100);
+                      const vol = Math.floor(voiceVolume * 100);
                       return vol === 0 ? "Muted" : vol + "%";
                     }}
                     valueLabelDisplay="auto"
@@ -388,6 +556,12 @@ export const SettingsDialog = ({ open, onClose }: SettingsProps) => {
                 </VolumeSlider>
               </div>
             </Box>
+          </FormGroup>
+        )}
+        {storageUsage !== undefined && storageUsage !== 0 && (
+          <FormGroup>
+            <FormLabel>Storage Usage</FormLabel>
+            <div>{storageUsage ? `${(storageUsage / 1024 / 1024).toFixed(2)} MB` : "0 MB"}</div>
           </FormGroup>
         )}
       </Container>
@@ -409,9 +583,20 @@ const Container = styled.div`
 `;
 
 const StyledSelect = styled(Select)`
-  width: 300px;
-  color: black;
+  width: 360px;
   margin: 8px 0;
+`;
+
+const StyledMenuItem = styled(MenuItem)`
+  padding: 12px 20px;
+  border-radius: 12px;
+  margin: 0 8px;
+  display: flex;
+  gap: 6px;
+`;
+
+const StyledFormLabel = styled(FormControlLabel)`
+  max-width: 360px;
 `;
 
 const NoVoiceStyles = styled.p`
@@ -421,7 +606,7 @@ const NoVoiceStyles = styled.p`
   gap: 6px;
   opacity: 0.8;
   font-weight: 500;
-  max-width: 300px;
+  max-width: 330px;
 `;
 
 const VolumeSlider = styled(Stack)`
@@ -430,7 +615,5 @@ const VolumeSlider = styled(Stack)`
   padding: 12px 24px 12px 18px;
   border-radius: 18px;
   transition: 0.3s all;
-  &:hover {
-    background: #89898939;
-  }
+  width: 100%;
 `;

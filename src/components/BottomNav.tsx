@@ -5,12 +5,21 @@ import {
   PersonRounded,
   TaskAlt,
 } from "@mui/icons-material";
-import { BottomNavigation, BottomNavigationAction, Box, css, styled } from "@mui/material";
-import { ColorPalette, pulseAnimation, slideInBottom } from "../styles";
+import {
+  Badge,
+  BottomNavigation,
+  BottomNavigationAction,
+  Box,
+  css,
+  styled,
+  useTheme,
+} from "@mui/material";
 import { useContext, useEffect, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
-import { useResponsiveDisplay } from "../hooks/useResponsiveDisplay";
 import { UserContext } from "../contexts/UserContext";
+import { useResponsiveDisplay } from "../hooks/useResponsiveDisplay";
+import { pulseAnimation, slideInBottom } from "../styles";
+import { getFontColor } from "../utils";
 
 /**
  * Component for rendering the bottom navigation bar.
@@ -18,10 +27,12 @@ import { UserContext } from "../contexts/UserContext";
 export const BottomNav = (): JSX.Element | null => {
   const { user } = useContext(UserContext);
   const { tasks, settings } = user;
+  const [value, setValue] = useState<number | undefined>();
+
+  const theme = useTheme();
+  const n = useNavigate();
   const isMobile = useResponsiveDisplay();
   const location = useLocation();
-  const [value, setValue] = useState<number | undefined>();
-  const n = useNavigate();
 
   const smallIconSize = "29px";
 
@@ -39,7 +50,7 @@ export const BottomNav = (): JSX.Element | null => {
         case "/add":
           setValue(2);
           break;
-        case "/import-export":
+        case "/transfer":
           setValue(3);
           break;
         case "/user":
@@ -49,7 +60,7 @@ export const BottomNav = (): JSX.Element | null => {
           setValue(0);
           break;
         default:
-          setValue(undefined); // Fallback for the undefined route.
+          setValue(undefined); // Fallback for the undefined route
       }
     }
   }, [location.pathname]);
@@ -63,8 +74,9 @@ export const BottomNav = (): JSX.Element | null => {
     <Container>
       <StyledBottomNavigation
         showLabels
+        glow={settings.enableGlow}
         value={value}
-        onChange={(_event, newValue) => {
+        onChange={(_event, newValue: number) => {
           window.scrollTo({
             top: 0,
             behavior: "smooth",
@@ -75,13 +87,21 @@ export const BottomNav = (): JSX.Element | null => {
         <NavigationButton
           onClick={() => n("/")}
           label="Tasks"
-          icon={<TaskAlt sx={{ fontSize: smallIconSize }} />}
+          icon={
+            <Badge
+              color="primary"
+              badgeContent={value !== 0 ? tasks.filter((task) => !task.done).length : undefined}
+              max={99}
+            >
+              <TaskAlt sx={{ fontSize: smallIconSize }} />
+            </Badge>
+          }
         />
         <NavigationButton
           onClick={() => n("/categories")}
           label="Categories"
           icon={<CategoryRounded sx={{ fontSize: smallIconSize }} />}
-          disabled={!settings[0].enableCategories}
+          disabled={!settings.enableCategories}
         />
         <NavigationButton
           onClick={() => n("add")}
@@ -89,13 +109,14 @@ export const BottomNav = (): JSX.Element | null => {
           aria-label="Add"
           icon={
             <AddIcon
+              clr={theme.palette.primary.main}
               fontSize="large"
-              animate={tasks.length === 0 && value !== 2 ? true : undefined}
+              animate={tasks.length === 0 && value !== 2}
             />
           }
         />
         <NavigationButton
-          onClick={() => n("import-export")}
+          onClick={() => n("transfer")}
           label="Transfer"
           icon={<GetAppRounded sx={{ fontSize: smallIconSize }} />}
         />
@@ -109,18 +130,19 @@ export const BottomNav = (): JSX.Element | null => {
   );
 };
 
-const AddIcon = styled(AddRounded)<{ animate?: boolean }>`
-  border: 2px solid ${ColorPalette.purple};
-  background-color: #232e58;
+const AddIcon = styled(AddRounded)<{ clr: string; animate: boolean }>`
+  border: 2px solid ${({ clr }) => clr};
+  background-color: ${({ theme }) => theme.palette.secondary.main};
   font-size: 38px;
   border-radius: 100px;
   padding: 6px;
   margin: 14px;
-  ${({ animate }) =>
+  transition: background 0.3s;
+  ${({ animate, theme }) =>
     animate &&
     css`
-      animation: ${pulseAnimation} 1.2s infinite;
-    `}
+      animation: ${pulseAnimation(theme.palette.primary.main, 10)} 1.2s infinite;
+    `};
 `;
 
 const Container = styled(Box)`
@@ -129,21 +151,24 @@ const Container = styled(Box)`
   width: 100%;
   margin: 0;
   animation: ${slideInBottom} 0.5s ease;
-  z-index: 999; /*9999*/
+  z-index: 999;
 `;
 
-const StyledBottomNavigation = styled(BottomNavigation)`
+const StyledBottomNavigation = styled(BottomNavigation)<{ glow: boolean }>`
   border-radius: 24px 24px 0 0;
-  background: #232e58e1;
-  backdrop-filter: blur(18px);
+  background: ${({ theme, glow }) => `${theme.palette.secondary.main}${glow ? "c8" : "e6"}`};
+  backdrop-filter: blur(20px);
   margin: 0px 20px 0px -20px;
   padding: 18px 10px 32px 10px;
+  transition:
+    0.3s background,
+    color;
 `;
 
 const NavigationButton = styled(BottomNavigationAction)`
   border-radius: 18px;
   margin: 4px;
-  color: white;
+  color: ${({ theme }) => getFontColor(theme.palette.secondary.main)};
 
   &:disabled {
     opacity: 0.6;
@@ -151,11 +176,8 @@ const NavigationButton = styled(BottomNavigationAction)`
       text-shadow: none;
     }
   }
+
   & .MuiBottomNavigationAction-label {
-    font-size: 13px;
-    text-shadow: 0 0 12px #000000ce;
-  }
-  & .Mui-selected {
-    /* text-shadow: 0 0 5px ${ColorPalette.purple}; */
+    font-size: 13px !important;
   }
 `;

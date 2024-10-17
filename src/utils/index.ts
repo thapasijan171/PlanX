@@ -1,7 +1,8 @@
-export { displayGreeting } from "./displayGreeting";
+export { exportTasksToJson } from "./exportTasks";
+export { getFontColor, isDark } from "./colorUtils";
 export { getRandomGreeting } from "./getRandomGreeting";
-export { getFontColorFromHex } from "./getFontColorFromHex";
-export { calculateDateDifference } from "./calculateTimeDiff";
-export { formatDate } from "./formatDate";
-export { getTaskCompletionText } from "./getTaskCompletionText";
-export { exportTasksToJson } from "./exportTasksToJson";
+export { systemInfo } from "./getSystemInfo";
+export { saveQRCode } from "./saveQRCode";
+export { showToast } from "./showToast";
+export { generateUUID } from "./generateUUID";
+export { timeAgo, formatDate, calculateDateDifference } from "./timeUtils";

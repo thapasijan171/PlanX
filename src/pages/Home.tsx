@@ -1,7 +1,6 @@
-import { useState, useEffect, ReactNode, useContext, useMemo } from "react";
-import { AddTaskBtn, Tasks } from "../components";
+import { useState, useEffect, ReactNode, useContext, useMemo, lazy, Suspense } from "react";
 import {
-  ColorPalette,
+  AddButton,
   GreetingHeader,
   GreetingText,
   Offline,
@@ -14,12 +13,19 @@ import {
   TasksCountContainer,
 } from "../styles";
 
-import { displayGreeting, getRandomGreeting, getTaskCompletionText } from "../utils";
+import { getRandomGreeting } from "../utils";
 import { Emoji } from "emoji-picker-react";
-import { Box, Typography } from "@mui/material";
+import { Box, Tooltip, Typography } from "@mui/material";
 import { useOnlineStatus } from "../hooks/useOnlineStatus";
-import { TodayRounded, WifiOff } from "@mui/icons-material";
+import { AddRounded, TodayRounded, WifiOff } from "@mui/icons-material";
 import { UserContext } from "../contexts/UserContext";
+import { useResponsiveDisplay } from "../hooks/useResponsiveDisplay";
+import { useNavigate } from "react-router-dom";
+import { TaskProvider } from "../contexts/TaskProvider";
+
+const TasksList = lazy(() =>
+  import("../components/tasks/TasksList").then((module) => ({ default: module.TasksList })),
+);
 
 const Home = () => {
   const { user } = useContext(UserContext);
@@ -33,10 +39,12 @@ const Home = () => {
 
   const completedTaskPercentage = useMemo<number>(
     () => (completedTasksCount / tasks.length) * 100,
-    [completedTasksCount, tasks.length]
+    [completedTasksCount, tasks.length],
   );
 
   const isOnline = useOnlineStatus();
+  const n = useNavigate();
+  const isMobile = useResponsiveDisplay();
 
   useEffect(() => {
     setRandomGreeting(getRandomGreeting());
@@ -44,7 +52,7 @@ const Home = () => {
 
     const interval = setInterval(() => {
       setRandomGreeting(getRandomGreeting());
-      setGreetingKey((prevKey) => prevKey + 1); 
+      setGreetingKey((prevKey) => prevKey + 1); // Update the key on each interval
     }, 6000);
 
     return () => clearInterval(interval);
@@ -91,8 +99,42 @@ const Home = () => {
     if (typeof text === "string") {
       return replaceEmojiCodes(text);
     } else {
-      // It's already a ReactNode, no need to process for this
+      // It's already a ReactNode, no need to process
       return text;
+    }
+  };
+
+  // Returns a greeting based on the current time.
+  const displayGreeting = (): string => {
+    const currentTime = new Date();
+    const currentHour = currentTime.getHours();
+    let greeting: string;
+    if (currentHour < 12 && currentHour >= 5) {
+      greeting = "Good morning";
+    } else if (currentHour < 18 && currentHour > 12) {
+      greeting = "Good afternoon";
+    } else {
+      greeting = "Good evening";
+    }
+
+    return greeting;
+  };
+
+  // Returns a task completion message based on the completion percentage.
+  const getTaskCompletionText = (completionPercentage: number): string => {
+    switch (true) {
+      case completionPercentage === 0:
+        return "No tasks completed yet. Keep going!";
+      case completionPercentage === 100:
+        return "Congratulations! All tasks completed!";
+      case completionPercentage >= 75:
+        return "Almost there!";
+      case completionPercentage >= 50:
+        return "You're halfway there! Keep it up!";
+      case completionPercentage >= 25:
+        return "You're making good progress.";
+      default:
+        return "You're just getting started.";
     }
   };
 
@@ -100,7 +142,11 @@ const Home = () => {
     <>
       <GreetingHeader>
         <Emoji unified="1f44b" emojiStyle={emojisStyle} /> &nbsp; {displayGreeting()}
-        {name && <span translate="no">, {name}</span>}
+        {name && (
+          <span translate="no">
+            , <span>{name}</span>
+          </span>
+        )}
       </GreetingHeader>
       <GreetingText key={greetingKey}>{renderGreetingWithEmojis(randomGreeting)}</GreetingText>
       {!isOnline && (
@@ -110,7 +156,7 @@ const Home = () => {
       )}
       {tasks.length > 0 && (
         <TasksCountContainer>
-          <TasksCount glow={settings[0].enableGlow}>
+          <TasksCount glow={settings.enableGlow}>
             <Box sx={{ position: "relative", display: "inline-flex" }}>
               <StyledProgress
                 variant="determinate"
@@ -118,14 +164,12 @@ const Home = () => {
                 size={64}
                 thickness={5}
                 aria-label="Progress"
-                style={{
-                  filter: settings[0].enableGlow
-                    ? `drop-shadow(0 0 6px ${ColorPalette.purple + "C8"})`
-                    : "none",
-                }}
+                glow={settings.enableGlow}
               />
 
-              <ProgressPercentageContainer>
+              <ProgressPercentageContainer
+                glow={settings.enableGlow && completedTaskPercentage > 0}
+              >
                 <Typography
                   variant="caption"
                   component="div"
@@ -161,10 +205,23 @@ const Home = () => {
           </TasksCount>
         </TasksCountContainer>
       )}
-
-      <Tasks />
-
-      <AddTaskBtn animate={tasks.length === 0} />
+      <Suspense fallback={<div>Loading...</div>}>
+        <TaskProvider>
+          <TasksList />
+        </TaskProvider>
+      </Suspense>
+      {!isMobile && (
+        <Tooltip title={tasks.length > 0 ? "Add New Task" : "Add Task"} placement="left">
+          <AddButton
+            animate={tasks.length === 0}
+            glow={settings.enableGlow}
+            onClick={() => n("add")}
+            aria-label="Add Task"
+          >
+            <AddRounded style={{ fontSize: "44px" }} />
+          </AddButton>
+        </Tooltip>
+      )}
     </>
   );
 };
