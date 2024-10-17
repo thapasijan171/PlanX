@@ -9,7 +9,7 @@ const manifest: Partial<ManifestOptions> = {
   theme_color: "#7764E8",
   background_color: "#171D34",
   description:
-    "Todo app with many features, including local storage, sharing tasks via link and more! Made by github.com/maciekt07",
+    "Todo app with many features, including local storage, sharing tasks via link and more! Made by github.com/thapasijan171",
   icons: [
     {
       src: "/logo192.png",
