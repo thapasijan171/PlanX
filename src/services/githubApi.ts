@@ -30,7 +30,7 @@ export const fetchGitHubInfo = async (): Promise<GitHubInfoResponse> => {
     } else {
       // Check if rate limit exceeded
       if (repoResponse.status === 403 && branchResponse.status === 403) {
-        showToast("You are online", {
+        showToast("You are online now", {
           disableVibrate: true,
         });
       } else {
@@ -40,7 +40,7 @@ export const fetchGitHubInfo = async (): Promise<GitHubInfoResponse> => {
   } catch (error) {
     console.error(error);
     if (navigator.onLine) {
-      showToast(`You are online`, { disableVibrate: true });
+      showToast(`You are online now`, { disableVibrate: true });
     }
   }
   // Return a default value in case of error
