@@ -30,7 +30,7 @@ export const fetchGitHubInfo = async (): Promise<GitHubInfoResponse> => {
     } else {
       // Check if rate limit exceeded
       if (repoResponse.status === 403 && branchResponse.status === 403) {
-        showToast("Wellcome Back.", {
+        showToast("You are online", {
           disableVibrate: true,
         });
       } else {
