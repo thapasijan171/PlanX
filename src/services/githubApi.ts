@@ -25,7 +25,7 @@ export const fetchGitHubInfo = async (): Promise<GitHubInfoResponse> => {
 
       return {
         repoData,
-        branchData
+        branchData,
       };
     } else {
       // Check if rate limit exceeded
@@ -41,7 +41,7 @@ export const fetchGitHubInfo = async (): Promise<GitHubInfoResponse> => {
   } catch (error) {
     console.error(error);
     if (navigator.onLine) {
-      showToast("Failed to fetch Github API.", { type: "error", disableVibrate: true });
+      showToast("Wellcome Back.", { disableVibrate: true });
     }
   }
   // Return a default value in case of error
