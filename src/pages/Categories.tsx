@@ -51,7 +51,7 @@ const Categories = () => {
   const [editEmoji, setEditEmoji] = useState<string | null>(null);
   const [editColor, setEditColor] = useState<string>(ColorPalette.purple);
 
-  const n = useNavigate();
+  const n = useNavigate(); 
 
   useEffect(() => {
     document.title = "Todo App - Categories";

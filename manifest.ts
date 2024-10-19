@@ -1,8 +1,8 @@
 import type { ManifestOptions } from "vite-plugin-pwa";
 
 const manifest: Partial<ManifestOptions> = {
-  name: "Todo App",
-  short_name: "Todo App",
+  name: "PlanX",
+  short_name: "PlanX",
   display: "standalone",
   scope: "/",
   start_url: "/",
