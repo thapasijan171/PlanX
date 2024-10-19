@@ -54,7 +54,7 @@ const Categories = () => {
   const n = useNavigate(); 
 
   useEffect(() => {
-    document.title = "Todo App - Categories";
+    document.title = "PlanX - Categories";
     if (!user.settings.enableCategories) {
       n("/");
     }

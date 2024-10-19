@@ -223,8 +223,7 @@ export const ProfileSidebar = () => {
         >
           <Logo src={logo} alt="logo" />
           <LogoText>
-            <span>Todo</span> App
-            <span>.</span>
+            <span>PlanX.</span>
           </LogoText>
         </LogoContainer>
 
@@ -271,7 +270,7 @@ export const ProfileSidebar = () => {
 
         <StyledDivider />
 
-        <MenuLink to="https://github.com/thapasijan171/TodoApp">
+        <MenuLink to="https://github.com/thapasijan171/PlanX">
           <StyledMenuItem translate="no">
             <GitHub /> &nbsp; Github{" "}
             {stars && (
@@ -287,7 +286,7 @@ export const ProfileSidebar = () => {
           </StyledMenuItem>
         </MenuLink>
 
-        <MenuLink to="https://github.com/thapasijan171/TodoApp/issues/new">
+        <MenuLink to="https://github.com/thapasijan171/PlanX/issues/new">
           <StyledMenuItem>
             <BugReportRounded /> &nbsp; Report Issue{" "}
             {Boolean(issuesCount || issuesCount === 0) && (

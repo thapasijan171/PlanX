@@ -94,7 +94,7 @@ const SharePage = () => {
   }, [taskParam, userNameParam]);
 
   useEffect(() => {
-    document.title = `Todo App - Recieved Task ${taskData ? "(" + taskData.name + ")" : ""}`;
+    document.title = `PlanX - Recieved Task ${taskData ? "(" + taskData.name + ")" : ""}`;
   }, [taskData]);
 
   const handleAddTask = () => {

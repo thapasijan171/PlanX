@@ -46,7 +46,7 @@ const UserProfile = () => {
   const systemTheme = useSystemTheme();
 
   useEffect(() => {
-    document.title = `Todo App - User ${name ? `(${name})` : ""}`;
+    document.title = `PlanX - User ${name ? `(${name})` : ""}`;
   }, [name]);
 
   const handleSaveName = () => {

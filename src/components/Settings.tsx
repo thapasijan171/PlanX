@@ -52,6 +52,7 @@ interface SettingsProps {
 }
 
 //TODO: Redesign settings component to have tabs on the left side
+// Issued: add navigater
 
 export const SettingsDialog: React.FC<SettingsProps> = ({ open, onClose }) => {
   const { user, setUser } = useContext(UserContext);

@@ -7,7 +7,7 @@ import { showToast } from "../utils";
  */
 export const fetchGitHubInfo = async (): Promise<GitHubInfoResponse> => {
   const username = "thapasijan171";
-  const repo = "TodoApp";
+  const repo = "PlanX";
   const branch = "main";
 
   try {
@@ -25,7 +25,7 @@ export const fetchGitHubInfo = async (): Promise<GitHubInfoResponse> => {
 
       return {
         repoData,
-        branchData,
+        branchData
       };
     } else {
       // Check if rate limit exceeded

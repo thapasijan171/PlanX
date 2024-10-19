@@ -35,7 +35,7 @@ const AddTask = () => {
   const n = useNavigate();
 
   useEffect(() => {
-    document.title = "Todo App - Add Task";
+    document.title = "PlanX - Add Task";
   }, []);
 
   useEffect(() => {

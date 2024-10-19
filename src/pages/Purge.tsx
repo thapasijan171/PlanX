@@ -37,7 +37,7 @@ const Purge = () => {
   const [deleteAllDialog, setDeleteAllDialog] = useState<boolean>(false);
 
   useEffect(() => {
-    document.title = "Todo App - Purge tasks";
+    document.title = "PlanX - Purge tasks";
   }, []);
 
   const doneTasks = tasks.filter((task) => task.done);

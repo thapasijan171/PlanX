@@ -45,7 +45,7 @@ const Transfer = () => {
   useCtrlS();
 
   useEffect(() => {
-    document.title = "Todo App - Transfer tasks";
+    document.title = "PlanX - Transfer tasks";
   }, []);
 
   // clear file input after logout
@@ -118,7 +118,7 @@ const Transfer = () => {
           }
 
           /**
-           * TODO: write separate util function to check if task is not invalid
+           * TODO: write separate util function to check if task is not invalid  *this is a complete task*
            */
 
           // Check if any imported task property exceeds the maximum length
