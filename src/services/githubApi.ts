@@ -40,7 +40,7 @@ export const fetchGitHubInfo = async (): Promise<GitHubInfoResponse> => {
   } catch (error) {
     console.error(error);
     if (navigator.onLine) {
-      showToast("Wellcome Back.", { disableVibrate: true });
+      showToast(`You are online`, { disableVibrate: true });
     }
   }
   // Return a default value in case of error
