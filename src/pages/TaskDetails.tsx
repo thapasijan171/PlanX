@@ -39,7 +39,7 @@ const TaskDetails = () => {
 
   return (
     <>
-      <TopBar title="Plan Details" />
+      <TopBar title="Task Details" />
       <Container>
         <TaskName>
           Task: <span translate="no">{task.name}</span>

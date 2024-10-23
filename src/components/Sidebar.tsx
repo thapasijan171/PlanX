@@ -223,13 +223,14 @@ export const ProfileSidebar = () => {
         >
           <Logo src={logo} alt="logo" />
           <LogoText>
-            <span>PlanX.</span>
+            <span>PlanX</span>
+            <span>.</span>
           </LogoText>
         </LogoContainer>
 
         <MenuLink to="/">
           <StyledMenuItem onClick={handleClose}>
-            <TaskAltRounded /> &nbsp; Tasks
+            <TaskAltRounded /> &nbsp; Plans
             {tasks.filter((task) => !task.done).length > 0 && (
               <Tooltip title={`${tasks.filter((task) => !task.done).length} tasks to do`}>
                 <MenuLabel>
@@ -244,7 +245,7 @@ export const ProfileSidebar = () => {
 
         <MenuLink to="/add">
           <StyledMenuItem onClick={handleClose}>
-            <AddRounded /> &nbsp; Add Task
+            <AddRounded /> &nbsp; Add Plans
           </StyledMenuItem>
         </MenuLink>
 
@@ -258,7 +259,7 @@ export const ProfileSidebar = () => {
 
         <MenuLink to="/purge">
           <StyledMenuItem onClick={handleClose}>
-            <DeleteForeverRounded /> &nbsp; Purge Tasks
+            <DeleteForeverRounded /> &nbsp; Purge Plans
           </StyledMenuItem>
         </MenuLink>
 

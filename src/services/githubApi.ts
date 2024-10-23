@@ -21,7 +21,6 @@ export const fetchGitHubInfo = async (): Promise<GitHubInfoResponse> => {
         repoResponse.json() as Promise<GitHubRepoResponse>,
         branchResponse.json() as Promise<GitHubBranchResponse>,
       ]);
-      console.log(repoData);
 
       return {
         repoData,
@@ -30,7 +29,8 @@ export const fetchGitHubInfo = async (): Promise<GitHubInfoResponse> => {
     } else {
       // Check if rate limit exceeded
       if (repoResponse.status === 403 && branchResponse.status === 403) {
-        showToast("You are online now", {
+        showToast("Github API rate limit exceeded temporarily for your IP address.", {
+          type: "error",
           disableVibrate: true,
         });
       } else {
@@ -40,9 +40,9 @@ export const fetchGitHubInfo = async (): Promise<GitHubInfoResponse> => {
   } catch (error) {
     console.error(error);
     if (navigator.onLine) {
-      showToast(`You are online now`, { disableVibrate: true });
+      showToast("Failed to fetch Github API.", { type: "error", disableVibrate: true });
     }
   }
   // Return a default value in case of error
-  return { repoData: {} as GitHubRepoResponse, branchData: {} as GitHubBranchResponse };
+  return { repoData: {}, branchData: {} } as GitHubInfoResponse;
 };

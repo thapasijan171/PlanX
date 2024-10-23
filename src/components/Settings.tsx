@@ -52,7 +52,6 @@ interface SettingsProps {
 }
 
 //TODO: Redesign settings component to have tabs on the left side
-// Issued: add navigater
 
 export const SettingsDialog: React.FC<SettingsProps> = ({ open, onClose }) => {
   const { user, setUser } = useContext(UserContext);
@@ -406,7 +405,7 @@ export const SettingsDialog: React.FC<SettingsProps> = ({ open, onClose }) => {
             <Tooltip
               title={
                 "setAppBadge" in navigator
-                  ? "This will show number of not done tasks in app icon if PWA is installed."
+                  ? "This will show number of not done plans in app icon if PWA is installed."
                   : "App Badge is not supported"
               }
             >
@@ -434,7 +433,7 @@ export const SettingsDialog: React.FC<SettingsProps> = ({ open, onClose }) => {
                 onChange={handleSettingChange("doneToBottom")}
               />
             }
-            label="Move Done Tasks To Bottom"
+            label="Move Done Plans To Bottom"
           />
         </FormGroup>
 

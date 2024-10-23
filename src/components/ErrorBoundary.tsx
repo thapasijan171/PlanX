@@ -119,7 +119,7 @@ class ErrorBoundary extends React.Component<ErrorBoundaryProps, ErrorBoundarySta
             .
           </h2>
           <Alert severity="error" variant="filled" sx={{ mt: "-8px", mb: "18px" }}>
-            By cleaning app data, you will lose all of your tasks.
+            By cleaning app data, you will lose all of your plans.
           </Alert>
           <div style={{ display: "flex", gap: "12px" }}>
             <StyledButton color="warning" onClick={() => location.reload()}>
@@ -167,7 +167,7 @@ class ErrorBoundary extends React.Component<ErrorBoundaryProps, ErrorBoundarySta
                 showToast(`Exported all tasks (${tasks.length})`);
               }}
             >
-              <FileDownload /> &nbsp; Export Tasks To JSON
+              <FileDownload /> &nbsp; Export Plan To JSON
             </Button>
             <br />
             <code translate="no">{JSON.stringify(user, null, 4)}</code>
@@ -180,7 +180,7 @@ class ErrorBoundary extends React.Component<ErrorBoundaryProps, ErrorBoundarySta
               onClose={this.handleCloseDialog}
             />
             <DialogContent>
-              Are you sure you want to clear all data? You will loose all of your tasks.
+              Are you sure you want to clear all data? You will loose all of your plans.
             </DialogContent>
             <DialogActions>
               <DialogBtn onClick={this.handleCloseDialog}>Cancel</DialogBtn>

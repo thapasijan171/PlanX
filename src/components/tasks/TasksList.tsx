@@ -381,7 +381,7 @@ export const TasksList: React.FC = () => {
                 )}
               </span>
             </div>
-            {/* TODO: add more features add also navigater his*/}
+            {/* TODO: add more features */}
             <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
               <Tooltip title="Mark selected as done">
                 <IconButton

@@ -1,5 +1,5 @@
 import { ThemeProvider as EmotionThemeProvider } from "@emotion/react";
-import { DataObjectRounded } from "@mui/icons-material";
+import { DataObjectRounded, DeleteForeverRounded } from "@mui/icons-material";
 import { ThemeProvider as MuiThemeProvider, type Theme } from "@mui/material";
 import { useCallback, useContext, useEffect } from "react";
 import ErrorBoundary from "./components/ErrorBoundary";
@@ -41,6 +41,16 @@ function App() {
           return;
         }
 
+        if (key === "settings" && Array.isArray(userObject.settings)) {
+          // If the old settings is found, delete it
+          delete userObject.settings;
+          showToast("Removed old settings array format.", {
+            duration: 6000,
+            icon: <DeleteForeverRounded />,
+            disableVibrate: true,
+          });
+        }
+
         const userValue = userObject[key];
         const defaultValue = defaultObject[key];
 
@@ -50,7 +60,7 @@ function App() {
         } else if (userValue === undefined) {
           // Update only if the property is missing in user
           userObject[key] = defaultValue;
-          // Notify users about update
+          // Notify users about update in user object
           showToast(
             <div>
               Added new property to user object{" "}

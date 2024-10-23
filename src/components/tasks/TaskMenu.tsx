@@ -83,7 +83,7 @@ export const TaskMenu = () => {
           <div>
             <b>All tasks done</b>
             <br />
-            <span>You've checked off all your plans. Well done!</span>
+            <span>You've checked off all your Plans. Well done!</span>
           </div>,
           {
             icon: (
@@ -231,7 +231,7 @@ export const TaskMenu = () => {
         );
       },
       {
-        duration: 999999999,
+        duration: Infinity,
         style: {
           border: `1px solid ${theme.darkmode ? "#1b1d4eb7" : "#ededf7b0"} `,
           WebkitBackdropFilter: `blur(${theme.darkmode ? "10" : "14"}px)`,

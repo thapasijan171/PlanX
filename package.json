@@ -1,9 +1,17 @@
 {
   "name": "planx",
-  "author": "github.com/thapasijan171",
+  "author": {
+    "name": "Sijan lamichhane Magar",
+    "url": "https://github.com/thapasijan171"
+  },
   "private": true,
-  "version": "0.0.0",
   "type": "module",
+  "homepage": "https://planx.vercel.app",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/thapasijan171/PlanX.git"
+  },
+  "license": "MIT",
   "scripts": {
     "dev": "vite",
     "dev:host": "vite --host",

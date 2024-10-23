@@ -118,7 +118,7 @@ const Transfer = () => {
           }
 
           /**
-           * TODO: write separate util function to check if task is not invalid  *this is a complete task*
+           * TODO: write separate util function to check if task is not invalid
            */
 
           // Check if any imported task property exceeds the maximum length
